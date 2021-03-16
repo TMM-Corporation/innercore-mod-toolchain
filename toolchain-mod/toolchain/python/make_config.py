@@ -38,16 +38,34 @@ class MakeConfig(BaseConfig):
 				paths.append(path)
 		return paths
 
-
-# search for make.json
+projects_config = None
 make_config = None
+# search for projects.json
 for i in range(0, 4):
-	make_file = os.path.join("../" * i, "make.json")
-	if os.path.isfile(make_file):
-		make_config = MakeConfig(make_file)
+	projects_file = os.path.join("../" * i, "projects.json")
+	if os.path.isfile(projects_file):
+		with open(os.path.abspath(projects_file), encoding="utf-8") as file:
+			projects_config = json.load(file)
 		break
+if projects_config is None:
+	raise RuntimeError("failed to find projects.json")
+
+# search for project make file json
+if projects_config is not None:
+	current_project_name = projects_config["current"]
+	projects = projects_config["projects"]
+	current_project_info = projects[current_project_name]
+	current_project_folder = current_project_info["folder"]
+	current_project_make = current_project_info["make_config"]
+
+	for i in range(0, 4):
+		make_file = os.path.join("../" * i, current_project_folder+"/"+current_project_make)
+		if os.path.isfile(make_file):
+			make_config = MakeConfig(make_file)
+			print(make_file)
+
 if make_config is None:
-	raise RuntimeError("failed to find make.json")
+	raise RuntimeError("failed to find project make json file")
 
 
 if __name__ == '__main__':

@@ -1,0 +1,9 @@
+{
+	"current": "test",
+	"projects": {
+		"test": {
+			"folder": "mods/test",
+			"make_config": "make.json"
+		}
+	}
+}
