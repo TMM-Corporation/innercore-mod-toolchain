@@ -139,8 +139,7 @@ def task_build_info():
 		info_file.write(json.dumps(info, indent=" " * 4))
 	icon_path = config.get_value("global.info.icon")
 	if icon_path is not None:
-		copy_file(config.get_path(icon_path),
-				  config.get_path("output/mod_icon.png"))
+		copy_file(config.get_path(icon_path, True), config.get_path("output/mod_icon.png"))
 	return 0
 
 
