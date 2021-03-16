@@ -5,9 +5,10 @@ import os.path
 from base_config import BaseConfig
 
 class MakeConfig(BaseConfig):
-	def __init__(self, filename, root_dir):
+	def __init__(self, filename, root_dir, mod_dir_name):
 		self.filename = filename
 		self.root_dir = root_dir
+		self.mod_dir_name = mod_dir_name
 		self.mod_dir = os.path.abspath(os.path.join(self.filename, ".."))
 		with open(filename, encoding="utf-8") as file:
 			self.json = json.load(file)
@@ -15,6 +16,9 @@ class MakeConfig(BaseConfig):
 
 	def get_root_dir(self):
 		return self.root_dir
+		
+	def get_mod_dir(self):
+		return self.mod_dir_name
 
 	def get_path(self, relative_path, from_mod=None):
 		if(from_mod):
@@ -59,16 +63,16 @@ if projects_config is None:
 
 # search for project make file json
 if projects_config is not None:
-	current_project_name = projects_config["current"]
+	project_name = projects_config["current"]
 	projects = projects_config["projects"]
-	current_project_info = projects[current_project_name]
-	current_project_folder = current_project_info["folder"]
-	current_project_make = current_project_info["make_config"]
+	project_info = projects[project_name]
+	project_folder = project_info["folder"]
+	project_make = project_info["make_config"]
 
 	for i in range(0, 4):
-		make_file = os.path.join("../" * i, current_project_folder+"/"+current_project_make)
+		make_file = os.path.join("../" * i, project_folder+"/"+project_make)
 		if os.path.isfile(make_file):
-			make_config = MakeConfig(make_file, root_config)
+			make_config = MakeConfig(make_file, root_config, project_name)
 
 if make_config is None:
 	raise RuntimeError("failed to find project make json file")
