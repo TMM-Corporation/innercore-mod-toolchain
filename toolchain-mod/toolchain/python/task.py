@@ -132,29 +132,32 @@ def task_resources():
 def task_build_info():
 	import json
 	config = get_make_config()
-	with open(config.get_path("output/mod.info"), "w") as info_file:
+	out_dir = os.path.join("output", config.get_mod_dir())
+	with open(config.get_path(os.path.join(out_dir, "mod.info")), "w") as info_file:
 		info = dict(config.get_value("global.info", fallback={"name": "No was provided"}))
 		if "icon" in info:
 			del info["icon"]
 		info_file.write(json.dumps(info, indent=" " * 4))
 	icon_path = config.get_value("global.info.icon")
 	if icon_path is not None:
-		copy_file(config.get_path(icon_path, True), config.get_path("output/mod_icon.png"))
+		copy_file(config.get_path(icon_path, True), config.get_path(os.path.join(out_dir, "mod_icon.png")))
 	return 0
 
 
 @task("buildAdditional", lock=["cleanup", "push"])
 def task_build_additional():
 	overall_result = 0
-	for additional_dir in get_make_config().get_value("additional", fallback=[]):
+	config = get_make_config()
+	for additional_dir in config.get_value("additional", fallback=[]):
 		if "source" in additional_dir and "targetDir" in additional_dir:
-			for additional_path in get_make_config().get_paths(additional_dir["source"]):
+			for additional_path in config.get_paths(additional_dir["source"]):
 				if not os.path.exists(additional_path):
 					print("non existing additional path: " + additional_path)
 					overall_result = 1
 					break
-				target = get_make_config().get_path(os.path.join(
+				target = config.get_path(os.path.join(
 					"output",
+					config.get_mod_dir(),
 					additional_dir["targetDir"],
 					os.path.basename(additional_path)
 				))
@@ -169,12 +172,14 @@ def task_build_additional():
 @task("pushEverything", lock=["push"])
 def task_push_everything():
 	from push import push
-	return push(get_make_config().get_path("output"))
+	config = get_make_config()
+	return push(config.get_path(os.path.join("output", config.get_mod_dir())))
 
 
 @task("clearOutput", lock=["assemble", "push", "native", "java"])
 def task_clear_output():
-	clear_directory(get_make_config().get_path("output"))
+	config = get_make_config()
+	clear_directory(config.get_path(os.path.join("output", config.get_mod_dir())))
 	return 0
 
 
@@ -182,7 +187,7 @@ def task_clear_output():
 def task_exclude_directories():
 	config = get_make_config()
 	for path in config.get_value("make.excludeFromRelease", []):
-		for exclude in config.get_paths(os.path.join("output", path)):
+		for exclude in config.get_paths(os.path.join("output", config.get_mod_dir(), path)):
 			if os.path.isdir(exclude):
 				clear_directory(exclude)
 			elif os.path.isfile(exclude):
@@ -193,9 +198,10 @@ def task_exclude_directories():
 @task("buildPackage", lock=["push", "assemble", "native", "java"])
 def task_build_package():
 	import shutil
-	output_dir = get_make_config().get_path("output")
-	output_file = get_make_config().get_path("mod.icmod")
-	output_file_tmp = get_make_config().get_path("toolchain/build/mod.zip")
+	config = get_make_config()
+	output_dir = config.get_path(os.path.join("output", config.get_mod_dir()))
+	output_file = config.get_path("mod.icmod")
+	output_file_tmp = config.get_path("toolchain/build/mod.zip")
 	ensure_directory(output_dir)
 	ensure_file_dir(output_file_tmp)
 	if os.path.isfile(output_file):

@@ -115,6 +115,6 @@ class ModStructure:
 		self.write_build_config()
 
 
-mod_structure = ModStructure("output")
+mod_structure = ModStructure(os.path.join("output", make_config.get_mod_dir()))
 
 
