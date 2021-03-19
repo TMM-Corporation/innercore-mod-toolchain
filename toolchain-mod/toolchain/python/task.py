@@ -132,7 +132,7 @@ def task_resources():
 def task_build_info():
 	import json
 	config = get_make_config()
-	out_dir = os.path.join("output", config.get_mod_dir())
+	out_dir = os.path.join("output/debug", config.get_mod_dir())
 	with open(config.get_path(os.path.join(out_dir, "mod.info")), "w") as info_file:
 		info = dict(config.get_value("global.info", fallback={"name": "No was provided"}))
 		if "icon" in info:
@@ -157,6 +157,7 @@ def task_build_additional():
 					break
 				target = config.get_path(os.path.join(
 					"output",
+					"debug",
 					config.get_mod_dir(),
 					additional_dir["targetDir"],
 					os.path.basename(additional_path)
@@ -173,13 +174,13 @@ def task_build_additional():
 def task_push_everything():
 	from push import push
 	config = get_make_config()
-	return push(config.get_path(os.path.join("output", config.get_mod_dir())))
+	return push(config.get_path(os.path.join("output", "debug", config.get_mod_dir())))
 
 
 @task("clearOutput", lock=["assemble", "push", "native", "java"])
 def task_clear_output():
 	config = get_make_config()
-	clear_directory(config.get_path(os.path.join("output", config.get_mod_dir())))
+	clear_directory(config.get_path(os.path.join("output", "debug", config.get_mod_dir())))
 	return 0
 
 
@@ -199,8 +200,9 @@ def task_exclude_directories():
 def task_build_package():
 	import shutil
 	config = get_make_config()
-	output_dir = config.get_path(os.path.join("output", config.get_mod_dir()))
-	output_file = config.get_path("mod.icmod")
+	output_dir = config.get_path(os.path.join("output/debug", config.get_mod_dir()))
+	ensure_directory(config.get_path("output/release"))
+	output_file = config.get_path("output/release/"+config.get_mod_dir() + ".icmod")
 	output_file_tmp = config.get_path("toolchain/build/mod.zip")
 	ensure_directory(output_dir)
 	ensure_file_dir(output_file_tmp)
